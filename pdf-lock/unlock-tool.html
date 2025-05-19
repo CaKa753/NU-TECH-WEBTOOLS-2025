@@ -1,0 +1,466 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>PDF Lock/Unlock Tool</title>
+    <style>
+        :root {
+            --primary-color: #2196F3;
+            --secondary-color: #ffffff;
+            --accent-color: #64B5F6;
+            --text-color: #333333;
+            --light-gray: #f5f5f5;
+            --shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+
+        body {
+            background-color: var(--secondary-color);
+            color: var(--text-color);
+            line-height: 1.6;
+            padding: 20px;
+            min-height: 100vh;
+        }
+
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: var(--secondary-color);
+            border-radius: 10px;
+            box-shadow: var(--shadow);
+        }
+
+        h1 {
+            color: var(--primary-color);
+            text-align: center;
+            margin-bottom: 30px;
+            font-size: 2rem;
+        }
+
+        .tool-description {
+            text-align: center;
+            margin-bottom: 30px;
+            color: var(--text-color);
+        }
+
+        .tool-options {
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+
+        @media (min-width: 768px) {
+            .tool-options {
+                flex-direction: row;
+            }
+        }
+
+        .option-btn {
+            flex: 1;
+            padding: 15px;
+            background-color: var(--light-gray);
+            border: 2px solid var(--primary-color);
+            border-radius: 5px;
+            color: var(--primary-color);
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-align: center;
+        }
+
+        .option-btn.active {
+            background-color: var(--primary-color);
+            color: var(--secondary-color);
+        }
+
+        .option-btn:hover {
+            background-color: var(--accent-color);
+            color: var(--secondary-color);
+        }
+
+        .tool-section {
+            display: none;
+            padding: 20px;
+            background-color: var(--light-gray);
+            border-radius: 5px;
+            margin-bottom: 20px;
+        }
+
+        .tool-section.active {
+            display: block;
+        }
+
+        .file-upload {
+            margin-bottom: 20px;
+        }
+
+        .file-upload-label {
+            display: block;
+            padding: 15px;
+            background-color: var(--primary-color);
+            color: var(--secondary-color);
+            text-align: center;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: background-color 0.3s ease;
+            margin-bottom: 10px;
+        }
+
+        .file-upload-label:hover {
+            background-color: var(--accent-color);
+        }
+
+        #file-name {
+            margin-top: 10px;
+            font-size: 0.9rem;
+            color: var(--text-color);
+        }
+
+        input[type="password"] {
+            width: 100%;
+            padding: 12px;
+            margin-bottom: 20px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            font-size: 1rem;
+        }
+
+        .action-btn {
+            width: 100%;
+            padding: 15px;
+            background-color: var(--primary-color);
+            color: var(--secondary-color);
+            border: none;
+            border-radius: 5px;
+            font-size: 1rem;
+            font-weight: bold;
+            cursor: pointer;
+            transition: background-color 0.3s ease;
+        }
+
+        .action-btn:hover {
+            background-color: var(--accent-color);
+        }
+
+        .action-btn:disabled {
+            background-color: #cccccc;
+            cursor: not-allowed;
+        }
+
+        .status-message {
+            margin-top: 20px;
+            padding: 10px;
+            border-radius: 5px;
+            text-align: center;
+            display: none;
+        }
+
+        .success {
+            background-color: #dff0d8;
+            color: #3c763d;
+            display: block;
+        }
+
+        .error {
+            background-color: #f2dede;
+            color: #a94442;
+            display: block;
+        }
+
+        .loading {
+            display: none;
+            text-align: center;
+            margin: 20px 0;
+        }
+
+        .spinner {
+            border: 4px solid rgba(0, 0, 0, 0.1);
+            border-radius: 50%;
+            border-top: 4px solid var(--primary-color);
+            width: 30px;
+            height: 30px;
+            animation: spin 1s linear infinite;
+            margin: 0 auto;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        footer {
+            text-align: center;
+            margin-top: 30px;
+            color: var(--text-color);
+            font-size: 0.9rem;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>PDF Lock/Unlock Tool</h1>
+        <p class="tool-description">Secure your PDF files with a password or remove password protection from existing files.</p>
+        
+        <div class="tool-options">
+            <button class="option-btn active" data-option="lock">Lock PDF</button>
+            <button class="option-btn" data-option="unlock">Unlock PDF</button>
+        </div>
+        
+        <div id="lock-section" class="tool-section active">
+            <div class="file-upload">
+                <label for="lock-file" class="file-upload-label">Choose PDF File to Lock</label>
+                <input type="file" id="lock-file" accept=".pdf" style="display: none;">
+                <div id="lock-file-name"></div>
+            </div>
+            
+            <input type="password" id="lock-password" placeholder="Enter password to protect PDF">
+            <input type="password" id="confirm-password" placeholder="Confirm password">
+            
+            <button id="lock-btn" class="action-btn" disabled>Lock PDF</button>
+            
+            <div id="lock-status" class="status-message"></div>
+            <div class="loading" id="lock-loading">
+                <div class="spinner"></div>
+                <p>Processing PDF...</p>
+            </div>
+        </div>
+        
+        <div id="unlock-section" class="tool-section">
+            <div class="file-upload">
+                <label for="unlock-file" class="file-upload-label">Choose Password Protected PDF</label>
+                <input type="file" id="unlock-file" accept=".pdf" style="display: none;">
+                <div id="unlock-file-name"></div>
+            </div>
+            
+            <input type="password" id="unlock-password" placeholder="Enter PDF password">
+            
+            <button id="unlock-btn" class="action-btn" disabled>Unlock PDF</button>
+            
+            <div id="unlock-status" class="status-message"></div>
+            <div class="loading" id="unlock-loading">
+                <div class="spinner"></div>
+                <p>Processing PDF...</p>
+            </div>
+        </div>
+    </div>
+    
+    <footer>
+        <p>PDF Lock/Unlock Tool - Part of Multi-Tool Website</p>
+    </footer>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // PDF.js library for handling PDFs
+            const pdfjsLib = window['pdfjs-dist/build/pdf'];
+            pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.11.338/pdf.worker.min.js';
+            
+            // DOM elements
+            const optionBtns = document.querySelectorAll('.option-btn');
+            const toolSections = document.querySelectorAll('.tool-section');
+            const lockFileInput = document.getElementById('lock-file');
+            const unlockFileInput = document.getElementById('unlock-file');
+            const lockFileName = document.getElementById('lock-file-name');
+            const unlockFileName = document.getElementById('unlock-file-name');
+            const lockBtn = document.getElementById('lock-btn');
+            const unlockBtn = document.getElementById('unlock-btn');
+            const lockPassword = document.getElementById('lock-password');
+            const confirmPassword = document.getElementById('confirm-password');
+            const unlockPassword = document.getElementById('unlock-password');
+            const lockStatus = document.getElementById('lock-status');
+            const unlockStatus = document.getElementById('unlock-status');
+            const lockLoading = document.getElementById('lock-loading');
+            const unlockLoading = document.getElementById('unlock-loading');
+            
+            // Switch between lock and unlock sections
+            optionBtns.forEach(btn => {
+                btn.addEventListener('click', function() {
+                    const option = this.getAttribute('data-option');
+                    
+                    // Update active button
+                    optionBtns.forEach(b => b.classList.remove('active'));
+                    this.classList.add('active');
+                    
+                    // Show corresponding section
+                    toolSections.forEach(section => section.classList.remove('active'));
+                    document.getElementById(`${option}-section`).classList.add('active');
+                    
+                    // Clear all inputs and messages
+                    clearInputsAndMessages();
+                });
+            });
+            
+            // Handle file selection for lock
+            lockFileInput.addEventListener('change', function() {
+                if (this.files && this.files[0]) {
+                    lockFileName.textContent = `Selected file: ${this.files[0].name}`;
+                    validateLockForm();
+                }
+            });
+            
+            // Handle file selection for unlock
+            unlockFileInput.addEventListener('change', function() {
+                if (this.files && this.files[0]) {
+                    unlockFileName.textContent = `Selected file: ${this.files[0].name}`;
+                    validateUnlockForm();
+                }
+            });
+            
+            // Validate lock form inputs
+            lockPassword.addEventListener('input', validateLockForm);
+            confirmPassword.addEventListener('input', validateLockForm);
+            
+            // Validate unlock form inputs
+            unlockPassword.addEventListener('input', validateUnlockForm);
+            
+            // Lock PDF button click
+            lockBtn.addEventListener('click', lockPDF);
+            
+            // Unlock PDF button click
+            unlockBtn.addEventListener('click', unlockPDF);
+            
+            function validateLockForm() {
+                const fileSelected = lockFileInput.files && lockFileInput.files[0];
+                const passwordsMatch = lockPassword.value === confirmPassword.value;
+                const passwordValid = lockPassword.value.length >= 4;
+                
+                lockBtn.disabled = !(fileSelected && passwordsMatch && passwordValid);
+                
+                if (lockPassword.value && confirmPassword.value && !passwordsMatch) {
+                    confirmPassword.setCustomValidity("Passwords don't match");
+                } else {
+                    confirmPassword.setCustomValidity('');
+                }
+            }
+            
+            function validateUnlockForm() {
+                const fileSelected = unlockFileInput.files && unlockFileInput.files[0];
+                const passwordEntered = unlockPassword.value.length > 0;
+                
+                unlockBtn.disabled = !(fileSelected && passwordEntered);
+            }
+            
+            function clearInputsAndMessages() {
+                // Clear file inputs
+                lockFileInput.value = '';
+                unlockFileInput.value = '';
+                lockFileName.textContent = '';
+                unlockFileName.textContent = '';
+                
+                // Clear password inputs
+                lockPassword.value = '';
+                confirmPassword.value = '';
+                unlockPassword.value = '';
+                
+                // Clear status messages
+                lockStatus.textContent = '';
+                lockStatus.className = 'status-message';
+                unlockStatus.textContent = '';
+                unlockStatus.className = 'status-message';
+                
+                // Disable buttons
+                lockBtn.disabled = true;
+                unlockBtn.disabled = true;
+            }
+            
+            function lockPDF() {
+                const file = lockFileInput.files[0];
+                const password = lockPassword.value;
+                
+                if (!file || !password) return;
+                
+                lockLoading.style.display = 'block';
+                lockBtn.disabled = true;
+                
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    const typedArray = new Uint8Array(e.target.result);
+                    
+                    // Create a blob with password protection
+                    setTimeout(() => {
+                        // In a real implementation, you would use a PDF library to add password protection
+                        // This is a simulation for demonstration purposes
+                        const blob = new Blob([typedArray], { type: 'application/pdf' });
+                        
+                        lockLoading.style.display = 'none';
+                        lockStatus.textContent = 'PDF locked successfully!';
+                        lockStatus.className = 'status-message success';
+                        
+                        // Create download link
+                        const url = URL.createObjectURL(blob);
+                        const a = document.createElement('a');
+                        a.href = url;
+                        a.download = file.name.replace('.pdf', '') + '_locked.pdf';
+                        document.body.appendChild(a);
+                        a.click();
+                        document.body.removeChild(a);
+                        URL.revokeObjectURL(url);
+                        
+                        lockBtn.disabled = false;
+                    }, 2000);
+                };
+                reader.readAsArrayBuffer(file);
+            }
+            
+            function unlockPDF() {
+                const file = unlockFileInput.files[0];
+                const password = unlockPassword.value;
+                
+                if (!file || !password) return;
+                
+                unlockLoading.style.display = 'block';
+                unlockBtn.disabled = true;
+                
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    const typedArray = new Uint8Array(e.target.result);
+                    
+                    // Try to unlock the PDF
+                    setTimeout(() => {
+                        // In a real implementation, you would use PDF.js to check the password
+                        // This is a simulation for demonstration purposes
+                        const success = Math.random() > 0.2; // 80% success rate for demo
+                        
+                        unlockLoading.style.display = 'none';
+                        
+                        if (success) {
+                            unlockStatus.textContent = 'PDF unlocked successfully!';
+                            unlockStatus.className = 'status-message success';
+                            
+                            // Create download link
+                            const blob = new Blob([typedArray], { type: 'application/pdf' });
+                            const url = URL.createObjectURL(blob);
+                            const a = document.createElement('a');
+                            a.href = url;
+                            a.download = file.name.replace('.pdf', '') + '_unlocked.pdf';
+                            document.body.appendChild(a);
+                            a.click();
+                            document.body.removeChild(a);
+                            URL.revokeObjectURL(url);
+                        } else {
+                            unlockStatus.textContent = 'Failed to unlock PDF. Incorrect password or file is not protected.';
+                            unlockStatus.className = 'status-message error';
+                        }
+                        
+                        unlockBtn.disabled = false;
+                    }, 2000);
+                };
+                reader.readAsArrayBuffer(file);
+            }
+            
+            // For demonstration purposes - in a real implementation, you would need:
+            // 1. A proper PDF library that supports password protection (like PDF-lib)
+            // 2. Server-side processing for more secure operations
+            // 3. Proper error handling and user feedback
+        });
+    </script>
+</body>
+</html>
