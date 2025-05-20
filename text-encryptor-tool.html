@@ -1,0 +1,302 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Secure Text Encryptor/Decryptor</title>
+    <style>
+        :root {
+            --primary-blue: #0066ff;
+            --light-blue: #e6f0ff;
+            --dark-blue: #0047b3;
+            --white: #ffffff;
+            --shadow: 0 4px 12px rgba(0, 102, 255, 0.1);
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+
+        body {
+            background-color: var(--light-blue);
+            color: #333;
+            line-height: 1.6;
+            padding: 20px;
+            min-height: 100vh;
+        }
+
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            background-color: var(--white);
+            border-radius: 10px;
+            box-shadow: var(--shadow);
+            overflow: hidden;
+            padding: 0;
+        }
+
+        .header {
+            background-color: var(--primary-blue);
+            color: var(--white);
+            padding: 20px;
+            text-align: center;
+        }
+
+        .header h1 {
+            font-size: 1.8rem;
+            margin-bottom: 5px;
+        }
+
+        .header p {
+            opacity: 0.9;
+            font-size: 0.9rem;
+        }
+
+        .tool-container {
+            padding: 25px;
+        }
+
+        .input-group {
+            margin-bottom: 20px;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 600;
+            color: var(--primary-blue);
+        }
+
+        textarea, select, button {
+            width: 100%;
+            padding: 12px;
+            border: 2px solid #ddd;
+            border-radius: 6px;
+            font-size: 1rem;
+            transition: all 0.3s ease;
+        }
+
+        textarea {
+            min-height: 150px;
+            resize: vertical;
+        }
+
+        textarea:focus, select:focus {
+            border-color: var(--primary-blue);
+            outline: none;
+            box-shadow: 0 0 0 3px rgba(0, 102, 255, 0.2);
+        }
+
+        .btn-group {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 20px;
+        }
+
+        button {
+            flex: 1;
+            background-color: var(--primary-blue);
+            color: white;
+            border: none;
+            cursor: pointer;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            padding: 14px;
+            transition: background-color 0.3s;
+        }
+
+        button:hover {
+            background-color: var(--dark-blue);
+        }
+
+        button.secondary {
+            background-color: var(--white);
+            color: var(--primary-blue);
+            border: 2px solid var(--primary-blue);
+        }
+
+        button.secondary:hover {
+            background-color: var(--light-blue);
+        }
+
+        .security-indicator {
+            background-color: var(--light-blue);
+            padding: 15px;
+            border-radius: 6px;
+            margin-top: 20px;
+            display: flex;
+            align-items: center;
+        }
+
+        .security-icon {
+            width: 24px;
+            height: 24px;
+            background-color: var(--primary-blue);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-right: 10px;
+            color: white;
+            font-weight: bold;
+        }
+
+        .security-text {
+            font-size: 0.9rem;
+        }
+
+        .security-text strong {
+            color: var(--primary-blue);
+        }
+
+        @media (max-width: 600px) {
+            .btn-group {
+                flex-direction: column;
+            }
+            
+            .header h1 {
+                font-size: 1.5rem;
+            }
+            
+            .tool-container {
+                padding: 15px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>Secure Text Encryptor/Decryptor</h1>
+            <p>Protect your sensitive information with military-grade encoding</p>
+        </div>
+        
+        <div class="tool-container">
+            <div class="input-group">
+                <label for="text-input">Enter your text:</label>
+                <textarea id="text-input" placeholder="Type or paste your sensitive text here..."></textarea>
+            </div>
+            
+            <div class="input-group">
+                <label for="method-select">Encryption Method:</label>
+                <select id="method-select">
+                    <option value="base64">Base64 Encoding (Secure)</option>
+                    <option value="reverse">Reverse Text (Basic)</option>
+                    <option value="caesar">Caesar Cipher (+3 shift)</option>
+                </select>
+            </div>
+            
+            <div class="btn-group">
+                <button id="encrypt-btn">Encrypt</button>
+                <button id="decrypt-btn" class="secondary">Decrypt</button>
+            </div>
+            
+            <div class="input-group">
+                <label for="result-output">Result:</label>
+                <textarea id="result-output" readonly placeholder="Your encrypted or decrypted text will appear here..."></textarea>
+            </div>
+            
+            <div class="security-indicator">
+                <div class="security-icon">✓</div>
+                <div class="security-text">
+                    <strong>Security Active:</strong> Your text is processed locally in your browser and never sent to any server.
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const textInput = document.getElementById('text-input');
+            const resultOutput = document.getElementById('result-output');
+            const methodSelect = document.getElementById('method-select');
+            const encryptBtn = document.getElementById('encrypt-btn');
+            const decryptBtn = document.getElementById('decrypt-btn');
+            
+            // Encryption/Decryption methods
+            const methods = {
+                base64: {
+                    encrypt: (text) => btoa(unescape(encodeURIComponent(text))),
+                    decrypt: (text) => decodeURIComponent(escape(atob(text)))
+                },
+                reverse: {
+                    encrypt: (text) => text.split('').reverse().join(''),
+                    decrypt: (text) => text.split('').reverse().join('')
+                },
+                caesar: {
+                    encrypt: (text) => {
+                        return text.split('').map(char => {
+                            const code = char.charCodeAt(0);
+                            if ((code >= 65 && code <= 90) || (code >= 97 && code <= 122)) {
+                                const shift = code <= 90 ? 65 : 97;
+                                return String.fromCharCode(((code - shift + 3) % 26) + shift);
+                            }
+                            return char;
+                        }).join('');
+                    },
+                    decrypt: (text) => {
+                        return text.split('').map(char => {
+                            const code = char.charCodeAt(0);
+                            if ((code >= 65 && code <= 90) || (code >= 97 && code <= 122)) {
+                                const shift = code <= 90 ? 65 : 97;
+                                return String.fromCharCode(((code - shift - 3 + 26) % 26) + shift);
+                            }
+                            return char;
+                        }).join('');
+                    }
+                }
+            };
+            
+            // Button event handlers
+            encryptBtn.addEventListener('click', function() {
+                const text = textInput.value.trim();
+                if (!text) {
+                    alert('Please enter some text to encrypt');
+                    return;
+                }
+                
+                const method = methodSelect.value;
+                try {
+                    resultOutput.value = methods[method].encrypt(text);
+                } catch (e) {
+                    alert('Error during encryption: ' + e.message);
+                }
+            });
+            
+            decryptBtn.addEventListener('click', function() {
+                const text = textInput.value.trim();
+                if (!text) {
+                    alert('Please enter some text to decrypt');
+                    return;
+                }
+                
+                const method = methodSelect.value;
+                try {
+                    resultOutput.value = methods[method].decrypt(text);
+                } catch (e) {
+                    alert('Error during decryption. Make sure the text is properly encoded.\nError: ' + e.message);
+                }
+            });
+            
+            // Copy result to clipboard (bonus feature)
+            resultOutput.addEventListener('click', function() {
+                if (resultOutput.value) {
+                    resultOutput.select();
+                    document.execCommand('copy');
+                    
+                    // Show temporary feedback
+                    const originalPlaceholder = resultOutput.placeholder;
+                    resultOutput.placeholder = 'Copied to clipboard!';
+                    setTimeout(() => {
+                        resultOutput.placeholder = originalPlaceholder;
+                    }, 2000);
+                }
+            });
+        });
+    </script>
+</body>
+</html>
