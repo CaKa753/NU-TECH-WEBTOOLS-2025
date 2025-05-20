@@ -1,0 +1,330 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Base64 Tool | Multi-Tool Website</title>
+    <style>
+        :root {
+            --primary-color: #0099ff;
+            --primary-dark: #0077cc;
+            --light-color: #ffffff;
+            --bg-color: #f5f9ff;
+            --text-color: #333333;
+            --border-color: #dddddd;
+        }
+        
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+        
+        body {
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            line-height: 1.6;
+            padding: 20px;
+        }
+        
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            background-color: var(--light-color);
+            border-radius: 10px;
+            box-shadow: 0 0 20px rgba(0, 0, 0, 0.1);
+            padding: 30px;
+        }
+        
+        h1 {
+            color: var(--primary-color);
+            text-align: center;
+            margin-bottom: 20px;
+        }
+        
+        .description {
+            text-align: center;
+            margin-bottom: 30px;
+            color: #666;
+        }
+        
+        .tool-container {
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+        }
+        
+        .input-group {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+        
+        label {
+            font-weight: bold;
+            color: var(--primary-color);
+        }
+        
+        textarea {
+            width: 100%;
+            min-height: 150px;
+            padding: 15px;
+            border: 2px solid var(--border-color);
+            border-radius: 5px;
+            resize: vertical;
+            font-size: 16px;
+            transition: border-color 0.3s;
+        }
+        
+        textarea:focus {
+            outline: none;
+            border-color: var(--primary-color);
+        }
+        
+        .button-group {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            margin-bottom: 10px;
+        }
+        
+        button {
+            background-color: var(--primary-color);
+            color: var(--light-color);
+            border: none;
+            padding: 10px 20px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 16px;
+            font-weight: bold;
+            transition: background-color 0.3s;
+            flex-grow: 1;
+        }
+        
+        button:hover {
+            background-color: var(--primary-dark);
+        }
+        
+        button.secondary {
+            background-color: var(--light-color);
+            color: var(--primary-color);
+            border: 2px solid var(--primary-color);
+        }
+        
+        button.secondary:hover {
+            background-color: var(--bg-color);
+        }
+        
+        .result-container {
+            position: relative;
+            margin-top: 20px;
+        }
+        
+        .result-actions {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            display: flex;
+            gap: 5px;
+        }
+        
+        .result-actions button {
+            padding: 5px 10px;
+            font-size: 14px;
+        }
+        
+        .radio-group {
+            display: flex;
+            gap: 15px;
+            margin-bottom: 15px;
+        }
+        
+        .radio-option {
+            display: flex;
+            align-items: center;
+            gap: 5px;
+        }
+        
+        .radio-option input {
+            accent-color: var(--primary-color);
+        }
+        
+        @media (max-width: 600px) {
+            .container {
+                padding: 20px;
+            }
+            
+            .button-group {
+                flex-direction: column;
+            }
+            
+            button {
+                width: 100%;
+            }
+        }
+        
+        .notification {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            background-color: var(--primary-color);
+            color: var(--light-color);
+            padding: 10px 20px;
+            border-radius: 5px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.2);
+            transform: translateY(-100px);
+            opacity: 0;
+            transition: all 0.3s;
+            z-index: 1000;
+        }
+        
+        .notification.show {
+            transform: translateY(0);
+            opacity: 1;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Base64 Encoder/Decoder</h1>
+        <p class="description">Encode text to Base64 or decode Base64 back to text with this simple tool.</p>
+        
+        <div class="tool-container">
+            <div class="radio-group">
+                <div class="radio-option">
+                    <input type="radio" id="encode" name="operation" value="encode" checked>
+                    <label for="encode">Encode to Base64</label>
+                </div>
+                <div class="radio-option">
+                    <input type="radio" id="decode" name="operation" value="decode">
+                    <label for="decode">Decode from Base64</label>
+                </div>
+            </div>
+            
+            <div class="input-group">
+                <label for="input-text">Input Text:</label>
+                <textarea id="input-text" placeholder="Enter text to encode or Base64 to decode..."></textarea>
+            </div>
+            
+            <div class="button-group">
+                <button id="process-btn">Process</button>
+                <button id="clear-btn" class="secondary">Clear</button>
+            </div>
+            
+            <div class="input-group">
+                <label for="output-text">Result:</label>
+                <div class="result-container">
+                    <textarea id="output-text" readonly></textarea>
+                    <div class="result-actions">
+                        <button id="copy-btn" class="secondary" title="Copy to clipboard">Copy</button>
+                        <button id="download-btn" class="secondary" title="Download as file">Download</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="notification" id="notification">Copied to clipboard!</div>
+    
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const inputText = document.getElementById('input-text');
+            const outputText = document.getElementById('output-text');
+            const processBtn = document.getElementById('process-btn');
+            const clearBtn = document.getElementById('clear-btn');
+            const copyBtn = document.getElementById('copy-btn');
+            const downloadBtn = document.getElementById('download-btn');
+            const encodeRadio = document.getElementById('encode');
+            const decodeRadio = document.getElementById('decode');
+            const notification = document.getElementById('notification');
+            
+            // Process button click handler
+            processBtn.addEventListener('click', function() {
+                const text = inputText.value.trim();
+                
+                if (!text) {
+                    showNotification('Please enter some text first!');
+                    return;
+                }
+                
+                try {
+                    if (encodeRadio.checked) {
+                        // Encode to Base64
+                        outputText.value = btoa(unescape(encodeURIComponent(text)));
+                        showNotification('Text encoded to Base64!');
+                    } else {
+                        // Decode from Base64
+                        outputText.value = decodeURIComponent(escape(atob(text)));
+                        showNotification('Base64 decoded to text!');
+                    }
+                } catch (error) {
+                    outputText.value = 'Error: ' + error.message;
+                    if (decodeRadio.checked) {
+                        showNotification('Invalid Base64 input!', true);
+                    } else {
+                        showNotification('Processing error!', true);
+                    }
+                }
+            });
+            
+            // Clear button click handler
+            clearBtn.addEventListener('click', function() {
+                inputText.value = '';
+                outputText.value = '';
+            });
+            
+            // Copy button click handler
+            copyBtn.addEventListener('click', function() {
+                if (!outputText.value) {
+                    showNotification('No result to copy!', true);
+                    return;
+                }
+                
+                outputText.select();
+                document.execCommand('copy');
+                showNotification('Copied to clipboard!');
+            });
+            
+            // Download button click handler
+            downloadBtn.addEventListener('click', function() {
+                if (!outputText.value) {
+                    showNotification('No result to download!', true);
+                    return;
+                }
+                
+                const operation = encodeRadio.checked ? 'encoded' : 'decoded';
+                const blob = new Blob([outputText.value], { type: 'text/plain' });
+                const url = URL.createObjectURL(blob);
+                const a = document.createElement('a');
+                a.href = url;
+                a.download = `base64-${operation}-result.txt`;
+                document.body.appendChild(a);
+                a.click();
+                document.body.removeChild(a);
+                URL.revokeObjectURL(url);
+                
+                showNotification('Download started!');
+            });
+            
+            // Show notification
+            function showNotification(message, isError = false) {
+                notification.textContent = message;
+                notification.style.backgroundColor = isError ? '#ff4444' : '#0099ff';
+                notification.classList.add('show');
+                
+                setTimeout(() => {
+                    notification.classList.remove('show');
+                }, 3000);
+            }
+            
+            // Handle Enter key in input textarea
+            inputText.addEventListener('keydown', function(e) {
+                if (e.key === 'Enter' && e.ctrlKey) {
+                    processBtn.click();
+                }
+            });
+        });
+    </script>
+</body>
+</html>
