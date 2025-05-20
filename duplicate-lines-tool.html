@@ -1,0 +1,252 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Remove Duplicate Lines Tool</title>
+    <style>
+        :root {
+            --primary-color: #0066ff;
+            --secondary-color: #e6f0ff;
+            --text-color: #333;
+            --light-color: #ffffff;
+            --shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+        
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+        
+        body {
+            background-color: #f5f9ff;
+            color: var(--text-color);
+            line-height: 1.6;
+            padding: 20px;
+        }
+        
+        .container {
+            max-width: 1000px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: var(--light-color);
+            border-radius: 10px;
+            box-shadow: var(--shadow);
+        }
+        
+        h1 {
+            color: var(--primary-color);
+            text-align: center;
+            margin-bottom: 20px;
+            font-size: 2rem;
+        }
+        
+        .description {
+            text-align: center;
+            margin-bottom: 30px;
+            color: #666;
+        }
+        
+        .tool-container {
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+        }
+        
+        @media (min-width: 768px) {
+            .tool-container {
+                flex-direction: row;
+            }
+        }
+        
+        .text-box-container {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+        }
+        
+        .text-box-label {
+            margin-bottom: 8px;
+            font-weight: bold;
+            color: var(--primary-color);
+        }
+        
+        .text-box {
+            width: 100%;
+            height: 300px;
+            padding: 15px;
+            border: 2px solid #ddd;
+            border-radius: 8px;
+            resize: none;
+            font-size: 14px;
+            line-height: 1.5;
+            transition: border-color 0.3s;
+        }
+        
+        .text-box:focus {
+            outline: none;
+            border-color: var(--primary-color);
+        }
+        
+        .button-container {
+            display: flex;
+            justify-content: center;
+            gap: 10px;
+            margin-top: 10px;
+            flex-wrap: wrap;
+        }
+        
+        .button {
+            padding: 10px 20px;
+            border: none;
+            border-radius: 5px;
+            background-color: var(--primary-color);
+            color: white;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.3s;
+            font-size: 16px;
+        }
+        
+        .button:hover {
+            background-color: #0052cc;
+            transform: translateY(-2px);
+        }
+        
+        .button:active {
+            transform: translateY(0);
+        }
+        
+        .button.secondary {
+            background-color: #666;
+        }
+        
+        .button.secondary:hover {
+            background-color: #555;
+        }
+        
+        .stats {
+            margin-top: 20px;
+            padding: 15px;
+            background-color: var(--secondary-color);
+            border-radius: 8px;
+            text-align: center;
+            font-size: 14px;
+        }
+        
+        .stats span {
+            font-weight: bold;
+            color: var(--primary-color);
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Remove Duplicate Lines</h1>
+        <p class="description">Paste your text below to remove duplicate lines. Keep only the first occurrence of each unique line.</p>
+        
+        <div class="tool-container">
+            <div class="text-box-container">
+                <label for="input-text" class="text-box-label">Input Text:</label>
+                <textarea id="input-text" class="text-box" placeholder="Paste your text here..."></textarea>
+            </div>
+            
+            <div class="text-box-container">
+                <label for="output-text" class="text-box-label">Unique Lines:</label>
+                <textarea id="output-text" class="text-box" placeholder="Results will appear here..." readonly></textarea>
+            </div>
+        </div>
+        
+        <div class="button-container">
+            <button id="process-btn" class="button">Remove Duplicates</button>
+            <button id="copy-btn" class="button secondary">Copy Results</button>
+            <button id="clear-btn" class="button secondary">Clear All</button>
+        </div>
+        
+        <div class="stats">
+            <p>Original lines: <span id="original-count">0</span> | Unique lines: <span id="unique-count">0</span> | Duplicates removed: <span id="removed-count">0</span></p>
+        </div>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const inputText = document.getElementById('input-text');
+            const outputText = document.getElementById('output-text');
+            const processBtn = document.getElementById('process-btn');
+            const copyBtn = document.getElementById('copy-btn');
+            const clearBtn = document.getElementById('clear-btn');
+            const originalCount = document.getElementById('original-count');
+            const uniqueCount = document.getElementById('unique-count');
+            const removedCount = document.getElementById('removed-count');
+            
+            // Process button click handler
+            processBtn.addEventListener('click', function() {
+                const text = inputText.value;
+                if (!text.trim()) {
+                    alert('Please enter some text first.');
+                    return;
+                }
+                
+                const lines = text.split('\n');
+                const uniqueLines = [];
+                const seenLines = new Set();
+                let duplicates = 0;
+                
+                for (const line of lines) {
+                    const trimmedLine = line.trim();
+                    if (!seenLines.has(trimmedLine)) {
+                        seenLines.add(trimmedLine);
+                        uniqueLines.push(line); // Keep original line (with whitespace)
+                    } else {
+                        duplicates++;
+                    }
+                }
+                
+                outputText.value = uniqueLines.join('\n');
+                
+                // Update stats
+                originalCount.textContent = lines.length;
+                uniqueCount.textContent = uniqueLines.length;
+                removedCount.textContent = duplicates;
+            });
+            
+            // Copy button click handler
+            copyBtn.addEventListener('click', function() {
+                if (!outputText.value.trim()) {
+                    alert('No results to copy.');
+                    return;
+                }
+                
+                outputText.select();
+                document.execCommand('copy');
+                
+                // Visual feedback
+                const originalText = copyBtn.textContent;
+                copyBtn.textContent = 'Copied!';
+                setTimeout(() => {
+                    copyBtn.textContent = originalText;
+                }, 2000);
+            });
+            
+            // Clear button click handler
+            clearBtn.addEventListener('click', function() {
+                inputText.value = '';
+                outputText.value = '';
+                originalCount.textContent = '0';
+                uniqueCount.textContent = '0';
+                removedCount.textContent = '0';
+            });
+            
+            // Handle mobile responsiveness
+            function handleResize() {
+                // Additional responsive handling if needed
+            }
+            
+            window.addEventListener('resize', handleResize);
+            handleResize();
+        });
+    </script>
+</body>
+</html>
