@@ -1,0 +1,254 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Text Case Converter | Multi-Tool Website</title>
+    <style>
+        :root {
+            --primary-color: #007bff;
+            --secondary-color: #ffffff;
+            --hover-color: #0056b3;
+            --shadow-color: rgba(0, 123, 255, 0.25);
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+
+        body {
+            background-color: #f8f9fa;
+            color: #333;
+            line-height: 1.6;
+        }
+
+        .container {
+            max-width: 1000px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+
+        .tool-card {
+            background-color: var(--secondary-color);
+            border-radius: 10px;
+            box-shadow: 0 4px 12px var(--shadow-color);
+            padding: 25px;
+            margin-bottom: 30px;
+        }
+
+        h1 {
+            color: var(--primary-color);
+            text-align: center;
+            margin-bottom: 20px;
+            font-size: 2.2rem;
+        }
+
+        .description {
+            text-align: center;
+            margin-bottom: 25px;
+            color: #555;
+        }
+
+        .input-section, .output-section {
+            margin-bottom: 20px;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 600;
+            color: var(--primary-color);
+        }
+
+        textarea {
+            width: 100%;
+            min-height: 150px;
+            padding: 12px;
+            border: 2px solid #ddd;
+            border-radius: 6px;
+            resize: vertical;
+            font-size: 16px;
+            transition: border 0.3s;
+        }
+
+        textarea:focus {
+            border-color: var(--primary-color);
+            outline: none;
+            box-shadow: 0 0 0 3px var(--shadow-color);
+        }
+
+        .button-group {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            margin-bottom: 20px;
+        }
+
+        button {
+            background-color: var(--primary-color);
+            color: white;
+            border: none;
+            padding: 10px 15px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 16px;
+            font-weight: 500;
+            transition: all 0.3s;
+            flex: 1 1 150px;
+        }
+
+        button:hover {
+            background-color: var(--hover-color);
+            transform: translateY(-2px);
+        }
+
+        .copy-btn {
+            background-color: #28a745;
+            margin-top: 10px;
+        }
+
+        .copy-btn:hover {
+            background-color: #218838;
+        }
+
+        .output-container {
+            position: relative;
+        }
+
+        .output-container button {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            padding: 5px 10px;
+            font-size: 14px;
+        }
+
+        @media (max-width: 768px) {
+            .button-group {
+                flex-direction: column;
+            }
+
+            button {
+                width: 100%;
+                margin-bottom: 5px;
+            }
+
+            h1 {
+                font-size: 1.8rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="tool-card">
+            <h1>Text Case Converter</h1>
+            <p class="description">Convert your text to UPPERCASE, lowercase, Sentence case, or Title Case with ease.</p>
+            
+            <div class="input-section">
+                <label for="inputText">Enter your text:</label>
+                <textarea id="inputText" placeholder="Paste or type your text here..."></textarea>
+            </div>
+            
+            <div class="button-group">
+                <button id="upperCaseBtn">UPPERCASE</button>
+                <button id="lowerCaseBtn">lowercase</button>
+                <button id="sentenceCaseBtn">Sentence case</button>
+                <button id="titleCaseBtn">Title Case</button>
+            </div>
+            
+            <div class="output-section">
+                <label for="outputText">Converted text:</label>
+                <div class="output-container">
+                    <textarea id="outputText" readonly></textarea>
+                    <button class="copy-btn" id="copyBtn">Copy</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const inputText = document.getElementById('inputText');
+            const outputText = document.getElementById('outputText');
+            const copyBtn = document.getElementById('copyBtn');
+            const upperCaseBtn = document.getElementById('upperCaseBtn');
+            const lowerCaseBtn = document.getElementById('lowerCaseBtn');
+            const sentenceCaseBtn = document.getElementById('sentenceCaseBtn');
+            const titleCaseBtn = document.getElementById('titleCaseBtn');
+
+            // Function to convert text to UPPERCASE
+            upperCaseBtn.addEventListener('click', function() {
+                outputText.value = inputText.value.toUpperCase();
+            });
+
+            // Function to convert text to lowercase
+            lowerCaseBtn.addEventListener('click', function() {
+                outputText.value = inputText.value.toLowerCase();
+            });
+
+            // Function to convert text to Sentence case
+            sentenceCaseBtn.addEventListener('click', function() {
+                const text = inputText.value.toLowerCase();
+                if (text.length === 0) {
+                    outputText.value = '';
+                    return;
+                }
+                outputText.value = text.charAt(0).toUpperCase() + text.slice(1);
+            });
+
+            // Function to convert text to Title Case
+            titleCaseBtn.addEventListener('click', function() {
+                const text = inputText.value.toLowerCase();
+                outputText.value = text.replace(/\b\w/g, function(char) {
+                    return char.toUpperCase();
+                });
+            });
+
+            // Function to copy text to clipboard
+            copyBtn.addEventListener('click', function() {
+                if (outputText.value.trim() === '') return;
+                
+                outputText.select();
+                document.execCommand('copy');
+                
+                // Visual feedback
+                const originalText = copyBtn.textContent;
+                copyBtn.textContent = 'Copied!';
+                copyBtn.style.backgroundColor = '#218838';
+                
+                setTimeout(function() {
+                    copyBtn.textContent = originalText;
+                    copyBtn.style.backgroundColor = '#28a745';
+                }, 2000);
+            });
+
+            // Auto-focus input on page load
+            inputText.focus();
+        });
+
+        // Enhanced Title Case function (handles small words)
+        function toTitleCase(str) {
+            const smallWords = /^(a|an|and|as|at|but|by|en|for|if|in|nor|of|on|or|per|the|to|vs?\.?|via)$/i;
+            
+            return str.toLowerCase().replace(/[A-Za-z0-9\u00C0-\u00FF]+[^\s-]*/g, function(match, index, title) {
+                if (index > 0 && index + match.length !== title.length &&
+                    match.search(smallWords) > -1 && title.charAt(index - 2) !== ":" &&
+                    (title.charAt(index + match.length) !== '-' || title.charAt(index - 1) === '-') &&
+                    title.charAt(index - 1).search(/[^\s-]/) < 0) {
+                    return match.toLowerCase();
+                }
+                
+                if (match.substr(1).search(/[A-Z]|\../) > -1) {
+                    return match;
+                }
+                
+                return match.charAt(0).toUpperCase() + match.substr(1);
+            });
+        }
+    </script>
+</body>
+</html>
