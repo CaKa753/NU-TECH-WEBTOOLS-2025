@@ -1,0 +1,653 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Code Minifier | Multi-Tool</title>
+    <style>
+        :root {
+            --primary-color: #0066ff;
+            --primary-light: #e6f0ff;
+            --white: #ffffff;
+            --light-gray: #f5f5f5;
+            --dark-gray: #333333;
+            --medium-gray: #777777;
+        }
+        
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+        
+        body {
+            background-color: var(--white);
+            color: var(--dark-gray);
+            line-height: 1.6;
+        }
+        
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        
+        header {
+            text-align: center;
+            margin-bottom: 30px;
+            padding-bottom: 20px;
+            border-bottom: 2px solid var(--primary-light);
+        }
+        
+        h1 {
+            color: var(--primary-color);
+            margin-bottom: 10px;
+        }
+        
+        .description {
+            color: var(--medium-gray);
+            max-width: 700px;
+            margin: 0 auto;
+        }
+        
+        .minifier-app {
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+        }
+        
+        .code-container {
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+        }
+        
+        .code-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            background-color: var(--primary-color);
+            color: var(--white);
+            padding: 10px 15px;
+            border-radius: 5px 5px 0 0;
+        }
+        
+        .code-title {
+            font-weight: bold;
+            text-transform: uppercase;
+            font-size: 14px;
+        }
+        
+        .code-actions {
+            display: flex;
+            gap: 10px;
+        }
+        
+        .btn {
+            padding: 5px 12px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 14px;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            gap: 5px;
+        }
+        
+        .btn-primary {
+            background-color: var(--white);
+            color: var(--primary-color);
+        }
+        
+        .btn-primary:hover {
+            background-color: var(--light-gray);
+        }
+        
+        .btn-secondary {
+            background-color: transparent;
+            color: var(--white);
+            border: 1px solid var(--white);
+        }
+        
+        .btn-secondary:hover {
+            background-color: rgba(255, 255, 255, 0.1);
+        }
+        
+        .code-area {
+            width: 100%;
+            min-height: 200px;
+            padding: 15px;
+            border: 1px solid #ddd;
+            border-radius: 0 0 5px 5px;
+            font-family: 'Courier New', Courier, monospace;
+            font-size: 14px;
+            resize: vertical;
+            background-color: var(--light-gray);
+        }
+        
+        .result-container {
+            margin-top: 10px;
+        }
+        
+        .stats {
+            display: flex;
+            justify-content: space-between;
+            margin-top: 10px;
+            color: var(--medium-gray);
+            font-size: 14px;
+        }
+        
+        .minify-btn {
+            background-color: var(--primary-color);
+            color: var(--white);
+            padding: 12px 20px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 16px;
+            font-weight: bold;
+            transition: background-color 0.3s ease;
+            align-self: center;
+            margin-top: 10px;
+        }
+        
+        .minify-btn:hover {
+            background-color: #0052cc;
+        }
+        
+        .tabs {
+            display: flex;
+            border-bottom: 1px solid #ddd;
+            margin-bottom: 15px;
+        }
+        
+        .tab {
+            padding: 10px 20px;
+            cursor: pointer;
+            border: 1px solid transparent;
+            border-bottom: none;
+            border-radius: 5px 5px 0 0;
+            background-color: var(--light-gray);
+            margin-right: 5px;
+        }
+        
+        .tab.active {
+            background-color: var(--white);
+            border-color: #ddd;
+            border-bottom-color: var(--white);
+            color: var(--primary-color);
+            font-weight: bold;
+        }
+        
+        .tab-content {
+            display: none;
+        }
+        
+        .tab-content.active {
+            display: block;
+        }
+        
+        @media (max-width: 768px) {
+            .container {
+                padding: 15px;
+            }
+            
+            .code-actions {
+                flex-direction: column;
+                gap: 5px;
+            }
+            
+            .btn {
+                width: 100%;
+                justify-content: center;
+            }
+            
+            .tabs {
+                overflow-x: auto;
+                white-space: nowrap;
+                padding-bottom: 5px;
+            }
+            
+            .tab {
+                padding: 8px 15px;
+                font-size: 14px;
+            }
+        }
+        
+        /* Tooltip styles */
+        .tooltip {
+            position: relative;
+            display: inline-block;
+        }
+        
+        .tooltip .tooltiptext {
+            visibility: hidden;
+            width: 120px;
+            background-color: var(--dark-gray);
+            color: var(--white);
+            text-align: center;
+            border-radius: 6px;
+            padding: 5px;
+            position: absolute;
+            z-index: 1;
+            bottom: 125%;
+            left: 50%;
+            transform: translateX(-50%);
+            opacity: 0;
+            transition: opacity 0.3s;
+            font-size: 12px;
+        }
+        
+        .tooltip:hover .tooltiptext {
+            visibility: visible;
+            opacity: 1;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>Code Minifier</h1>
+            <p class="description">Minify your HTML, CSS, and JavaScript code to reduce file size and improve website performance. Paste your code below and get a compressed version instantly.</p>
+        </header>
+        
+        <div class="minifier-app">
+            <div class="tabs">
+                <div class="tab active" data-tab="html">HTML</div>
+                <div class="tab" data-tab="css">CSS</div>
+                <div class="tab" data-tab="js">JavaScript</div>
+            </div>
+            
+            <div class="tab-content active" id="html-tab">
+                <div class="code-container">
+                    <div class="code-header">
+                        <span class="code-title">Original HTML</span>
+                        <div class="code-actions">
+                            <button class="btn btn-secondary" id="clear-html">
+                                <span class="tooltip">
+                                    Clear
+                                    <span class="tooltiptext">Clear editor</span>
+                                </span>
+                            </button>
+                            <button class="btn btn-secondary" id="paste-html">
+                                <span class="tooltip">
+                                    Paste
+                                    <span class="tooltiptext">Paste from clipboard</span>
+                                </span>
+                            </button>
+                        </div>
+                    </div>
+                    <textarea class="code-area" id="html-input" placeholder="Paste your HTML code here..."></textarea>
+                </div>
+                
+                <button class="minify-btn" id="minify-html">Minify HTML</button>
+                
+                <div class="result-container" id="html-result-container" style="display: none;">
+                    <div class="code-container">
+                        <div class="code-header">
+                            <span class="code-title">Minified HTML</span>
+                            <div class="code-actions">
+                                <button class="btn btn-primary" id="copy-html">
+                                    <span class="tooltip">
+                                        Copy
+                                        <span class="tooltiptext">Copy to clipboard</span>
+                                    </span>
+                                </button>
+                                <button class="btn btn-primary" id="download-html">
+                                    <span class="tooltip">
+                                        Download
+                                        <span class="tooltiptext">Download as file</span>
+                                    </span>
+                                </button>
+                            </div>
+                        </div>
+                        <textarea class="code-area" id="html-output" readonly></textarea>
+                        <div class="stats" id="html-stats"></div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="tab-content" id="css-tab">
+                <div class="code-container">
+                    <div class="code-header">
+                        <span class="code-title">Original CSS</span>
+                        <div class="code-actions">
+                            <button class="btn btn-secondary" id="clear-css">
+                                <span class="tooltip">
+                                    Clear
+                                    <span class="tooltiptext">Clear editor</span>
+                                </span>
+                            </button>
+                            <button class="btn btn-secondary" id="paste-css">
+                                <span class="tooltip">
+                                    Paste
+                                    <span class="tooltiptext">Paste from clipboard</span>
+                                </span>
+                            </button>
+                        </div>
+                    </div>
+                    <textarea class="code-area" id="css-input" placeholder="Paste your CSS code here..."></textarea>
+                </div>
+                
+                <button class="minify-btn" id="minify-css">Minify CSS</button>
+                
+                <div class="result-container" id="css-result-container" style="display: none;">
+                    <div class="code-container">
+                        <div class="code-header">
+                            <span class="code-title">Minified CSS</span>
+                            <div class="code-actions">
+                                <button class="btn btn-primary" id="copy-css">
+                                    <span class="tooltip">
+                                        Copy
+                                        <span class="tooltiptext">Copy to clipboard</span>
+                                    </span>
+                                </button>
+                                <button class="btn btn-primary" id="download-css">
+                                    <span class="tooltip">
+                                        Download
+                                        <span class="tooltiptext">Download as file</span>
+                                    </span>
+                                </button>
+                            </div>
+                        </div>
+                        <textarea class="code-area" id="css-output" readonly></textarea>
+                        <div class="stats" id="css-stats"></div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="tab-content" id="js-tab">
+                <div class="code-container">
+                    <div class="code-header">
+                        <span class="code-title">Original JavaScript</span>
+                        <div class="code-actions">
+                            <button class="btn btn-secondary" id="clear-js">
+                                <span class="tooltip">
+                                    Clear
+                                    <span class="tooltiptext">Clear editor</span>
+                                </span>
+                            </button>
+                            <button class="btn btn-secondary" id="paste-js">
+                                <span class="tooltip">
+                                    Paste
+                                    <span class="tooltiptext">Paste from clipboard</span>
+                                </span>
+                            </button>
+                        </div>
+                    </div>
+                    <textarea class="code-area" id="js-input" placeholder="Paste your JavaScript code here..."></textarea>
+                </div>
+                
+                <button class="minify-btn" id="minify-js">Minify JavaScript</button>
+                
+                <div class="result-container" id="js-result-container" style="display: none;">
+                    <div class="code-container">
+                        <div class="code-header">
+                            <span class="code-title">Minified JavaScript</span>
+                            <div class="code-actions">
+                                <button class="btn btn-primary" id="copy-js">
+                                    <span class="tooltip">
+                                        Copy
+                                        <span class="tooltiptext">Copy to clipboard</span>
+                                    </span>
+                                </button>
+                                <button class="btn btn-primary" id="download-js">
+                                    <span class="tooltip">
+                                        Download
+                                        <span class="tooltiptext">Download as file</span>
+                                    </span>
+                                </button>
+                            </div>
+                        </div>
+                        <textarea class="code-area" id="js-output" readonly></textarea>
+                        <div class="stats" id="js-stats"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // Tab switching
+            const tabs = document.querySelectorAll('.tab');
+            tabs.forEach(tab => {
+                tab.addEventListener('click', function() {
+                    // Remove active class from all tabs and content
+                    document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+                    document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
+                    
+                    // Add active class to clicked tab and corresponding content
+                    this.classList.add('active');
+                    const tabId = this.getAttribute('data-tab');
+                    document.getElementById(`${tabId}-tab`).classList.add('active');
+                });
+            });
+            
+            // Clear buttons
+            document.getElementById('clear-html').addEventListener('click', () => {
+                document.getElementById('html-input').value = '';
+            });
+            
+            document.getElementById('clear-css').addEventListener('click', () => {
+                document.getElementById('css-input').value = '';
+            });
+            
+            document.getElementById('clear-js').addEventListener('click', () => {
+                document.getElementById('js-input').value = '';
+            });
+            
+            // Paste buttons
+            document.getElementById('paste-html').addEventListener('click', async () => {
+                try {
+                    const text = await navigator.clipboard.readText();
+                    document.getElementById('html-input').value = text;
+                } catch (err) {
+                    alert('Failed to paste from clipboard. Please ensure you have granted clipboard permissions.');
+                }
+            });
+            
+            document.getElementById('paste-css').addEventListener('click', async () => {
+                try {
+                    const text = await navigator.clipboard.readText();
+                    document.getElementById('css-input').value = text;
+                } catch (err) {
+                    alert('Failed to paste from clipboard. Please ensure you have granted clipboard permissions.');
+                }
+            });
+            
+            document.getElementById('paste-js').addEventListener('click', async () => {
+                try {
+                    const text = await navigator.clipboard.readText();
+                    document.getElementById('js-input').value = text;
+                } catch (err) {
+                    alert('Failed to paste from clipboard. Please ensure you have granted clipboard permissions.');
+                }
+            });
+            
+            // Minify functions
+            function minifyHTML(html) {
+                // Remove comments
+                html = html.replace(/<!--[\s\S]*?-->/g, '');
+                // Remove whitespace between tags
+                html = html.replace(/>\s+</g, '><');
+                // Trim whitespace
+                return html.trim();
+            }
+            
+            function minifyCSS(css) {
+                // Remove comments
+                css = css.replace(/\/\*[\s\S]*?\*\//g, '');
+                // Remove whitespace
+                css = css.replace(/\s+/g, ' ');
+                // Remove spaces around brackets and colons
+                css = css.replace(/\s*([{:;}])\s*/g, '$1');
+                // Remove last semicolon before }
+                css = css.replace(/;}/g, '}');
+                // Trim whitespace
+                return css.trim();
+            }
+            
+            function minifyJS(js) {
+                // Basic minification (for a more complete solution, consider using a library)
+                // Remove single-line comments
+                js = js.replace(/\/\/.*$/gm, '');
+                // Remove multi-line comments
+                js = js.replace(/\/\*[\s\S]*?\*\//g, '');
+                // Remove whitespace around operators
+                js = js.replace(/\s*([=+\-*\/%&|^~<>!]?=)\s*/g, '$1');
+                // Remove unnecessary whitespace
+                js = js.replace(/\s+/g, ' ');
+                // Remove whitespace after statements
+                js = js.replace(/; /g, ';');
+                // Remove whitespace after commas
+                js = js.replace(/, /g, ',');
+                // Remove whitespace around brackets and braces
+                js = js.replace(/\s*([{}()[\]])\s*/g, '$1');
+                // Trim whitespace
+                return js.trim();
+            }
+            
+            // Minify buttons
+            document.getElementById('minify-html').addEventListener('click', () => {
+                const input = document.getElementById('html-input').value;
+                if (!input.trim()) {
+                    alert('Please enter some HTML code to minify.');
+                    return;
+                }
+                
+                const minified = minifyHTML(input);
+                document.getElementById('html-output').value = minified;
+                document.getElementById('html-result-container').style.display = 'block';
+                
+                // Update stats
+                const originalSize = new Blob([input]).size;
+                const minifiedSize = new Blob([minified]).size;
+                const reduction = Math.round((1 - minifiedSize / originalSize) * 100);
+                
+                document.getElementById('html-stats').innerHTML = `
+                    Original: ${originalSize} bytes | 
+                    Minified: ${minifiedSize} bytes | 
+                    Reduction: ${reduction}%
+                `;
+            });
+            
+            document.getElementById('minify-css').addEventListener('click', () => {
+                const input = document.getElementById('css-input').value;
+                if (!input.trim()) {
+                    alert('Please enter some CSS code to minify.');
+                    return;
+                }
+                
+                const minified = minifyCSS(input);
+                document.getElementById('css-output').value = minified;
+                document.getElementById('css-result-container').style.display = 'block';
+                
+                // Update stats
+                const originalSize = new Blob([input]).size;
+                const minifiedSize = new Blob([minified]).size;
+                const reduction = Math.round((1 - minifiedSize / originalSize) * 100);
+                
+                document.getElementById('css-stats').innerHTML = `
+                    Original: ${originalSize} bytes | 
+                    Minified: ${minifiedSize} bytes | 
+                    Reduction: ${reduction}%
+                `;
+            });
+            
+            document.getElementById('minify-js').addEventListener('click', () => {
+                const input = document.getElementById('js-input').value;
+                if (!input.trim()) {
+                    alert('Please enter some JavaScript code to minify.');
+                    return;
+                }
+                
+                const minified = minifyJS(input);
+                document.getElementById('js-output').value = minified;
+                document.getElementById('js-result-container').style.display = 'block';
+                
+                // Update stats
+                const originalSize = new Blob([input]).size;
+                const minifiedSize = new Blob([minified]).size;
+                const reduction = Math.round((1 - minifiedSize / originalSize) * 100);
+                
+                document.getElementById('js-stats').innerHTML = `
+                    Original: ${originalSize} bytes | 
+                    Minified: ${minifiedSize} bytes | 
+                    Reduction: ${reduction}%
+                `;
+            });
+            
+            // Copy buttons
+            document.getElementById('copy-html').addEventListener('click', () => {
+                const output = document.getElementById('html-output');
+                output.select();
+                document.execCommand('copy');
+                
+                // Show feedback
+                const originalText = document.getElementById('copy-html').innerHTML;
+                document.getElementById('copy-html').innerHTML = 'Copied!';
+                setTimeout(() => {
+                    document.getElementById('copy-html').innerHTML = originalText;
+                }, 2000);
+            });
+            
+            document.getElementById('copy-css').addEventListener('click', () => {
+                const output = document.getElementById('css-output');
+                output.select();
+                document.execCommand('copy');
+                
+                // Show feedback
+                const originalText = document.getElementById('copy-css').innerHTML;
+                document.getElementById('copy-css').innerHTML = 'Copied!';
+                setTimeout(() => {
+                    document.getElementById('copy-css').innerHTML = originalText;
+                }, 2000);
+            });
+            
+            document.getElementById('copy-js').addEventListener('click', () => {
+                const output = document.getElementById('js-output');
+                output.select();
+                document.execCommand('copy');
+                
+                // Show feedback
+                const originalText = document.getElementById('copy-js').innerHTML;
+                document.getElementById('copy-js').innerHTML = 'Copied!';
+                setTimeout(() => {
+                    document.getElementById('copy-js').innerHTML = originalText;
+                }, 2000);
+            });
+            
+            // Download buttons
+            document.getElementById('download-html').addEventListener('click', () => {
+                const content = document.getElementById('html-output').value;
+                downloadFile(content, 'minified.html');
+            });
+            
+            document.getElementById('download-css').addEventListener('click', () => {
+                const content = document.getElementById('css-output').value;
+                downloadFile(content, 'minified.css');
+            });
+            
+            document.getElementById('download-js').addEventListener('click', () => {
+                const content = document.getElementById('js-output').value;
+                downloadFile(content, 'minified.js');
+            });
+            
+            function downloadFile(content, filename) {
+                const blob = new Blob([content], { type: 'text/plain' });
+                const url = URL.createObjectURL(blob);
+                const a = document.createElement('a');
+                a.href = url;
+                a.download = filename;
+                document.body.appendChild(a);
+                a.click();
+                document.body.removeChild(a);
+                URL.revokeObjectURL(url);
+            }
+        });
+    </script>
+</body>
+</html>
