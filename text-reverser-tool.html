@@ -1,0 +1,293 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Text Reverser Tool</title>
+    <style>
+        :root {
+            --primary-color: #0066ff;
+            --secondary-color: #ffffff;
+            --accent-color: #e6f0ff;
+            --text-color: #333333;
+            --border-color: #cccccc;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+
+        body {
+            background-color: var(--secondary-color);
+            color: var(--text-color);
+            line-height: 1.6;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1000px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: var(--secondary-color);
+            border-radius: 10px;
+            box-shadow: 0 0 20px rgba(0, 102, 255, 0.1);
+        }
+
+        h1 {
+            color: var(--primary-color);
+            text-align: center;
+            margin-bottom: 20px;
+        }
+
+        .description {
+            text-align: center;
+            margin-bottom: 30px;
+            color: #666;
+        }
+
+        .tool-container {
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+        }
+
+        .input-section, .output-section {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+
+        textarea {
+            width: 100%;
+            min-height: 150px;
+            padding: 15px;
+            border: 2px solid var(--border-color);
+            border-radius: 8px;
+            resize: vertical;
+            font-size: 16px;
+            transition: border-color 0.3s;
+        }
+
+        textarea:focus {
+            outline: none;
+            border-color: var(--primary-color);
+        }
+
+        .options-section {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 15px;
+            margin: 15px 0;
+        }
+
+        .option {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .option input[type="radio"] {
+            accent-color: var(--primary-color);
+        }
+
+        .option label {
+            cursor: pointer;
+        }
+
+        .buttons {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            margin-bottom: 20px;
+        }
+
+        button {
+            padding: 10px 20px;
+            background-color: var(--primary-color);
+            color: var(--secondary-color);
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 16px;
+            transition: background-color 0.3s, transform 0.2s;
+            flex-grow: 1;
+        }
+
+        button:hover {
+            background-color: #0052cc;
+            transform: translateY(-2px);
+        }
+
+        button:active {
+            transform: translateY(0);
+        }
+
+        .copy-btn {
+            background-color: #4CAF50;
+        }
+
+        .copy-btn:hover {
+            background-color: #3e8e41;
+        }
+
+        .clear-btn {
+            background-color: #f44336;
+        }
+
+        .clear-btn:hover {
+            background-color: #d32f2f;
+        }
+
+        .output-label {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .char-count {
+            font-size: 14px;
+            color: #666;
+        }
+
+        @media (max-width: 768px) {
+            .options-section {
+                flex-direction: column;
+            }
+            
+            .buttons {
+                flex-direction: column;
+            }
+            
+            button {
+                width: 100%;
+            }
+        }
+
+        @media (max-width: 480px) {
+            body {
+                padding: 10px;
+            }
+            
+            .container {
+                padding: 15px;
+            }
+            
+            h1 {
+                font-size: 24px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Text Reverser Tool</h1>
+        <p class="description">Reverse your text in different ways. Choose to reverse the entire text, each word, or each line.</p>
+        
+        <div class="tool-container">
+            <div class="input-section">
+                <label for="input-text">Input Text:</label>
+                <textarea id="input-text" placeholder="Enter your text here..."></textarea>
+            </div>
+            
+            <div class="options-section">
+                <div class="option">
+                    <input type="radio" id="reverse-all" name="reverse-option" value="all" checked>
+                    <label for="reverse-all">Reverse Entire Text</label>
+                </div>
+                <div class="option">
+                    <input type="radio" id="reverse-words" name="reverse-option" value="words">
+                    <label for="reverse-words">Reverse Each Word</label>
+                </div>
+                <div class="option">
+                    <input type="radio" id="reverse-lines" name="reverse-option" value="lines">
+                    <label for="reverse-lines">Reverse Each Line</label>
+                </div>
+            </div>
+            
+            <div class="buttons">
+                <button id="reverse-btn">Reverse Text</button>
+                <button id="copy-btn" class="copy-btn">Copy Output</button>
+                <button id="clear-btn" class="clear-btn">Clear All</button>
+            </div>
+            
+            <div class="output-section">
+                <div class="output-label">
+                    <label for="output-text">Reversed Text:</label>
+                    <span id="char-count" class="char-count">0 characters</span>
+                </div>
+                <textarea id="output-text" readonly placeholder="Your reversed text will appear here..."></textarea>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const inputText = document.getElementById('input-text');
+            const outputText = document.getElementById('output-text');
+            const reverseBtn = document.getElementById('reverse-btn');
+            const copyBtn = document.getElementById('copy-btn');
+            const clearBtn = document.getElementById('clear-btn');
+            const charCount = document.getElementById('char-count');
+            const reverseOptions = document.getElementsByName('reverse-option');
+            
+            // Function to reverse text based on selected option
+            function reverseText() {
+                const text = inputText.value;
+                if (!text.trim()) {
+                    outputText.value = '';
+                    charCount.textContent = '0 characters';
+                    return;
+                }
+                
+                let reversedText = '';
+                const selectedOption = document.querySelector('input[name="reverse-option"]:checked').value;
+                
+                switch(selectedOption) {
+                    case 'words':
+                        reversedText = text.split(' ').map(word => word.split('').reverse().join('')).join(' ');
+                        break;
+                    case 'lines':
+                        reversedText = text.split('\n').map(line => line.split('').reverse().join('')).join('\n');
+                        break;
+                    default: // 'all'
+                        reversedText = text.split('').reverse().join('');
+                }
+                
+                outputText.value = reversedText;
+                charCount.textContent = `${reversedText.length} characters`;
+            }
+            
+            // Event listeners
+            reverseBtn.addEventListener('click', reverseText);
+            
+            copyBtn.addEventListener('click', function() {
+                if (outputText.value) {
+                    outputText.select();
+                    document.execCommand('copy');
+                    
+                    // Visual feedback
+                    const originalText = copyBtn.textContent;
+                    copyBtn.textContent = 'Copied!';
+                    setTimeout(() => {
+                        copyBtn.textContent = originalText;
+                    }, 2000);
+                }
+            });
+            
+            clearBtn.addEventListener('click', function() {
+                inputText.value = '';
+                outputText.value = '';
+                charCount.textContent = '0 characters';
+            });
+            
+            // Update character count when input changes
+            inputText.addEventListener('input', function() {
+                charCount.textContent = `${outputText.value.length} characters`;
+            });
+        });
+    </script>
+</body>
+</html>
