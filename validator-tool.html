@@ -1,0 +1,442 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>JSON Formatter & Validator</title>
+    <style>
+        :root {
+            --primary-color: #0066ff;
+            --secondary-color: #e6f0ff;
+            --error-color: #ff3333;
+            --success-color: #00cc66;
+            --text-color: #333333;
+            --light-text: #ffffff;
+            --background: #ffffff;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+
+        body {
+            background-color: var(--background);
+            color: var(--text-color);
+            line-height: 1.6;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1000px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+
+        h1 {
+            color: var(--primary-color);
+            text-align: center;
+            margin-bottom: 20px;
+            font-size: 2.2rem;
+        }
+
+        .description {
+            text-align: center;
+            margin-bottom: 30px;
+            color: #666;
+        }
+
+        .tool-container {
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+        }
+
+        .input-section, .output-section {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+
+        .section-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .section-title {
+            font-weight: bold;
+            color: var(--primary-color);
+            font-size: 1.2rem;
+        }
+
+        .button-group {
+            display: flex;
+            gap: 10px;
+        }
+
+        button {
+            background-color: var(--primary-color);
+            color: var(--light-text);
+            border: none;
+            padding: 8px 15px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-weight: bold;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            gap: 5px;
+            font-size: 0.9rem;
+        }
+
+        button:hover {
+            background-color: #0052cc;
+            transform: translateY(-1px);
+        }
+
+        button:active {
+            transform: translateY(0);
+        }
+
+        button.secondary {
+            background-color: var(--secondary-color);
+            color: var(--primary-color);
+        }
+
+        button.secondary:hover {
+            background-color: #d0dfff;
+        }
+
+        textarea {
+            width: 100%;
+            min-height: 200px;
+            padding: 15px;
+            border: 2px solid #ddd;
+            border-radius: 8px;
+            font-family: 'Courier New', Courier, monospace;
+            font-size: 0.95rem;
+            resize: vertical;
+            transition: border 0.3s ease;
+        }
+
+        textarea:focus {
+            outline: none;
+            border-color: var(--primary-color);
+        }
+
+        .output-container {
+            position: relative;
+        }
+
+        pre {
+            width: 100%;
+            min-height: 200px;
+            max-height: 500px;
+            padding: 15px;
+            border: 2px solid #ddd;
+            border-radius: 8px;
+            background-color: #f9f9f9;
+            overflow: auto;
+            font-family: 'Courier New', Courier, monospace;
+            font-size: 0.95rem;
+            white-space: pre-wrap;
+            word-wrap: break-word;
+        }
+
+        .error-message {
+            color: var(--error-color);
+            background-color: #ffeeee;
+            padding: 15px;
+            border-radius: 8px;
+            border-left: 4px solid var(--error-color);
+            font-family: 'Courier New', Courier, monospace;
+            font-size: 0.9rem;
+            margin-top: 10px;
+            display: none;
+        }
+
+        .success-message {
+            color: var(--success-color);
+            background-color: #eeffee;
+            padding: 10px 15px;
+            border-radius: 8px;
+            border-left: 4px solid var(--success-color);
+            font-weight: bold;
+            margin-top: 10px;
+            display: none;
+        }
+
+        .status-bar {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-top: 10px;
+            font-size: 0.85rem;
+            color: #666;
+        }
+
+        .char-count {
+            font-style: italic;
+        }
+
+        /* Mobile styles */
+        @media (max-width: 768px) {
+            .container {
+                padding: 10px;
+            }
+
+            h1 {
+                font-size: 1.8rem;
+            }
+
+            .button-group {
+                flex-wrap: wrap;
+                justify-content: flex-end;
+            }
+
+            button {
+                padding: 6px 10px;
+                font-size: 0.8rem;
+            }
+
+            textarea, pre {
+                min-height: 150px;
+            }
+        }
+
+        /* Syntax highlighting for JSON */
+        .json-key {
+            color: #0066cc;
+        }
+        .json-string {
+            color: #008000;
+        }
+        .json-number {
+            color: #ff8c00;
+        }
+        .json-boolean {
+            color: #0000ff;
+        }
+        .json-null {
+            color: #808080;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>JSON Formatter & Validator</h1>
+        <p class="description">Paste your JSON below to format and validate it. Errors will be shown if the JSON is invalid.</p>
+
+        <div class="tool-container">
+            <div class="input-section">
+                <div class="section-header">
+                    <span class="section-title">Input JSON</span>
+                    <div class="button-group">
+                        <button id="clearBtn">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                <path d="M3 6h18"></path>
+                                <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path>
+                            </svg>
+                            Clear
+                        </button>
+                        <button id="formatBtn" class="secondary">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                <polyline points="16 3 21 3 21 8"></polyline>
+                                <line x1="4" y1="20" x2="21" y2="3"></line>
+                                <polyline points="21 6 21 21 6 21"></polyline>
+                                <line x1="15" y1="15" x2="21" y2="21"></line>
+                                <line x1="4" y1="4" x2="9" y2="9"></line>
+                            </svg>
+                            Format
+                        </button>
+                    </div>
+                </div>
+                <textarea id="jsonInput" placeholder='Paste your JSON here, e.g. {"name":"John","age":30,"city":"New York"}'></textarea>
+                <div class="status-bar">
+                    <span id="inputStatus">Ready</span>
+                    <span class="char-count"><span id="charCount">0</span> characters</span>
+                </div>
+            </div>
+
+            <div class="output-section">
+                <div class="section-header">
+                    <span class="section-title">Formatted JSON</span>
+                    <div class="button-group">
+                        <button id="copyBtn" class="secondary">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                <rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect>
+                                <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path>
+                            </svg>
+                            Copy
+                        </button>
+                        <button id="downloadBtn">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+                                <polyline points="7 10 12 15 17 10"></polyline>
+                                <line x1="12" y1="15" x2="12" y2="3"></line>
+                            </svg>
+                            Download
+                        </button>
+                    </div>
+                </div>
+                <div class="output-container">
+                    <pre id="jsonOutput">Formatted JSON will appear here...</pre>
+                </div>
+                <div id="errorMessage" class="error-message"></div>
+                <div id="successMessage" class="success-message">JSON is valid and formatted successfully!</div>
+                <div class="status-bar">
+                    <span id="outputStatus">Waiting for input...</span>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const jsonInput = document.getElementById('jsonInput');
+            const jsonOutput = document.getElementById('jsonOutput');
+            const formatBtn = document.getElementById('formatBtn');
+            const clearBtn = document.getElementById('clearBtn');
+            const copyBtn = document.getElementById('copyBtn');
+            const downloadBtn = document.getElementById('downloadBtn');
+            const errorMessage = document.getElementById('errorMessage');
+            const successMessage = document.getElementById('successMessage');
+            const inputStatus = document.getElementById('inputStatus');
+            const outputStatus = document.getElementById('outputStatus');
+            const charCount = document.getElementById('charCount');
+
+            // Update character count
+            jsonInput.addEventListener('input', function() {
+                const count = jsonInput.value.length;
+                charCount.textContent = count;
+                inputStatus.textContent = count > 0 ? 'Editing...' : 'Ready';
+            });
+
+            // Format JSON button click handler
+            formatBtn.addEventListener('click', function() {
+                try {
+                    const inputText = jsonInput.value.trim();
+                    
+                    if (!inputText) {
+                        showError('Please enter some JSON to format.');
+                        return;
+                    }
+                    
+                    const jsonObj = JSON.parse(inputText);
+                    const formattedJson = JSON.stringify(jsonObj, null, 4);
+                    
+                    // Apply syntax highlighting
+                    jsonOutput.innerHTML = syntaxHighlight(formattedJson);
+                    
+                    // Show success message
+                    errorMessage.style.display = 'none';
+                    successMessage.style.display = 'block';
+                    outputStatus.textContent = 'Formatted successfully';
+                    outputStatus.style.color = 'var(--success-color)';
+                    
+                } catch (error) {
+                    showError(error.message);
+                }
+            });
+
+            // Clear button click handler
+            clearBtn.addEventListener('click', function() {
+                jsonInput.value = '';
+                jsonOutput.textContent = 'Formatted JSON will appear here...';
+                errorMessage.style.display = 'none';
+                successMessage.style.display = 'none';
+                inputStatus.textContent = 'Ready';
+                outputStatus.textContent = 'Waiting for input...';
+                outputStatus.style.color = 'inherit';
+                charCount.textContent = '0';
+            });
+
+            // Copy button click handler
+            copyBtn.addEventListener('click', function() {
+                const textToCopy = jsonOutput.textContent;
+                
+                if (!textToCopy || textToCopy === 'Formatted JSON will appear here...') {
+                    showError('Nothing to copy. Please format some JSON first.');
+                    return;
+                }
+                
+                navigator.clipboard.writeText(textToCopy)
+                    .then(() => {
+                        const originalText = copyBtn.innerHTML;
+                        copyBtn.innerHTML = '<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg> Copied!';
+                        setTimeout(() => {
+                            copyBtn.innerHTML = originalText;
+                        }, 2000);
+                    })
+                    .catch(err => {
+                        showError('Failed to copy text: ' + err);
+                    });
+            });
+
+            // Download button click handler
+            downloadBtn.addEventListener('click', function() {
+                const textToDownload = jsonOutput.textContent;
+                
+                if (!textToDownload || textToDownload === 'Formatted JSON will appear here...') {
+                    showError('Nothing to download. Please format some JSON first.');
+                    return;
+                }
+                
+                const blob = new Blob([textToDownload], { type: 'application/json' });
+                const url = URL.createObjectURL(blob);
+                const a = document.createElement('a');
+                a.href = url;
+                a.download = 'formatted.json';
+                document.body.appendChild(a);
+                a.click();
+                document.body.removeChild(a);
+                URL.revokeObjectURL(url);
+            });
+
+            // Show error message
+            function showError(message) {
+                errorMessage.textContent = message;
+                errorMessage.style.display = 'block';
+                successMessage.style.display = 'none';
+                outputStatus.textContent = 'Error formatting JSON';
+                outputStatus.style.color = 'var(--error-color)';
+            }
+
+            // Syntax highlighting for JSON
+            function syntaxHighlight(json) {
+                if (typeof json != 'string') {
+                    json = JSON.stringify(json, undefined, 4);
+                }
+                
+                json = json.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+                
+                return json.replace(/("(\\u[a-zA-Z0-9]{4}|\\[^u]|[^\\"])*"(\s*:)?|\b(true|false|null)\b|-?\d+(?:\.\d*)?(?:[eE][+\-]?\d+)?)/g, function (match) {
+                    let cls = 'json-number';
+                    if (/^"/.test(match)) {
+                        if (/:$/.test(match)) {
+                            cls = 'json-key';
+                        } else {
+                            cls = 'json-string';
+                        }
+                    } else if (/true|false/.test(match)) {
+                        cls = 'json-boolean';
+                    } else if (/null/.test(match)) {
+                        cls = 'json-null';
+                    }
+                    return '<span class="' + cls + '">' + match + '</span>';
+                });
+            }
+
+            // Auto-format when pressing Ctrl+Enter in the textarea
+            jsonInput.addEventListener('keydown', function(e) {
+                if (e.ctrlKey && e.key === 'Enter') {
+                    formatBtn.click();
+                }
+            });
+        });
+    </script>
+</body>
+</html>
