@@ -1,0 +1,222 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Age Calculator | Multi-Tool</title>
+    <style>
+        * {
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            margin: 0;
+            padding: 0;
+        }
+        
+        body {
+            background-color: #f0f8ff;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            padding: 20px;
+        }
+        
+        .calculator-container {
+            background-color: white;
+            border-radius: 10px;
+            box-shadow: 0 4px 15px rgba(0, 116, 217, 0.2);
+            padding: 30px;
+            width: 100%;
+            max-width: 500px;
+            text-align: center;
+        }
+        
+        h1 {
+            color: #0074d9;
+            margin-bottom: 20px;
+            font-size: 28px;
+        }
+        
+        .input-group {
+            margin-bottom: 25px;
+            text-align: left;
+        }
+        
+        label {
+            display: block;
+            margin-bottom: 8px;
+            color: #0074d9;
+            font-weight: 600;
+        }
+        
+        input[type="date"] {
+            width: 100%;
+            padding: 12px 15px;
+            border: 2px solid #0074d9;
+            border-radius: 5px;
+            font-size: 16px;
+            color: #333;
+            outline: none;
+            transition: border-color 0.3s;
+        }
+        
+        input[type="date"]:focus {
+            border-color: #0056b3;
+        }
+        
+        button {
+            background-color: #0074d9;
+            color: white;
+            border: none;
+            padding: 12px 25px;
+            border-radius: 5px;
+            font-size: 16px;
+            cursor: pointer;
+            transition: background-color 0.3s;
+            font-weight: 600;
+            width: 100%;
+            margin-bottom: 25px;
+        }
+        
+        button:hover {
+            background-color: #0056b3;
+        }
+        
+        .result {
+            background-color: #e6f2ff;
+            padding: 20px;
+            border-radius: 5px;
+            border-left: 5px solid #0074d9;
+        }
+        
+        .result h2 {
+            color: #0074d9;
+            margin-bottom: 15px;
+            font-size: 20px;
+        }
+        
+        .age-display {
+            display: flex;
+            justify-content: space-around;
+            flex-wrap: wrap;
+        }
+        
+        .age-box {
+            background-color: white;
+            padding: 15px;
+            border-radius: 5px;
+            margin: 5px;
+            min-width: 100px;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+        }
+        
+        .age-value {
+            font-size: 24px;
+            font-weight: bold;
+            color: #0074d9;
+        }
+        
+        .age-label {
+            font-size: 14px;
+            color: #666;
+            margin-top: 5px;
+        }
+        
+        @media (max-width: 480px) {
+            .calculator-container {
+                padding: 20px;
+            }
+            
+            h1 {
+                font-size: 24px;
+            }
+            
+            .age-display {
+                flex-direction: column;
+                align-items: center;
+            }
+            
+            .age-box {
+                width: 100%;
+                margin: 5px 0;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="calculator-container">
+        <h1>Age Calculator</h1>
+        <div class="input-group">
+            <label for="birthdate">Enter Your Date of Birth:</label>
+            <input type="date" id="birthdate" name="birthdate" max="">
+        </div>
+        <button onclick="calculateAge()">Calculate Age</button>
+        <div class="result" id="result" style="display: none;">
+            <h2>Your Age Is:</h2>
+            <div class="age-display">
+                <div class="age-box">
+                    <div class="age-value" id="years">0</div>
+                    <div class="age-label">Years</div>
+                </div>
+                <div class="age-box">
+                    <div class="age-value" id="months">0</div>
+                    <div class="age-label">Months</div>
+                </div>
+                <div class="age-box">
+                    <div class="age-value" id="days">0</div>
+                    <div class="age-label">Days</div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Set max date to today
+        document.getElementById('birthdate').max = new Date().toISOString().split('T')[0];
+        
+        function calculateAge() {
+            const birthdate = new Date(document.getElementById('birthdate').value);
+            const today = new Date();
+            
+            if (isNaN(birthdate.getTime())) {
+                alert('Please enter a valid date of birth');
+                return;
+            }
+            
+            if (birthdate > today) {
+                alert('Birthdate cannot be in the future');
+                return;
+            }
+            
+            let years = today.getFullYear() - birthdate.getFullYear();
+            let months = today.getMonth() - birthdate.getMonth();
+            let days = today.getDate() - birthdate.getDate();
+            
+            // Adjust for negative months or days
+            if (months < 0 || (months === 0 && days < 0)) {
+                years--;
+                months += 12;
+            }
+            
+            if (days < 0) {
+                const lastMonth = new Date(today.getFullYear(), today.getMonth() - 1, 0);
+                days += lastMonth.getDate();
+                months--;
+            }
+            
+            // Update the display
+            document.getElementById('years').textContent = years;
+            document.getElementById('months').textContent = months;
+            document.getElementById('days').textContent = days;
+            document.getElementById('result').style.display = 'block';
+        }
+        
+        // Calculate age automatically when date changes
+        document.getElementById('birthdate').addEventListener('change', function() {
+            if (this.value) {
+                calculateAge();
+            }
+        });
+    </script>
+</body>
+</html>
